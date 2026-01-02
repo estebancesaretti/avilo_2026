@@ -161,11 +161,71 @@ document.addEventListener('DOMContentLoaded', () => {
     populateCountriesAndCodes();
 });
 
+/* -------------------------------------------------------------------------- */
+/* Searchable Select Logic */
+/* -------------------------------------------------------------------------- */
+
+function initSearchableSelects(countries) {
+    const wrappers = document.querySelectorAll('.searchable-select');
+    
+    wrappers.forEach(wrapper => {
+        const input = wrapper.querySelector('.search-input');
+        const list = wrapper.querySelector('.options-list');
+        const hiddenInput = wrapper.querySelector('input[type="hidden"]');
+        
+        if (!input || !list) return;
+
+        // Populate List
+        countries.forEach(c => {
+            const item = document.createElement('div');
+            item.className = 'option-item';
+            item.textContent = `${c.flag} ${c.name}`;
+            item.dataset.value = c.name;
+            
+            item.addEventListener('click', () => {
+                input.value = item.textContent;
+                hiddenInput.value = c.name;
+                list.classList.remove('show');
+            });
+            
+            list.appendChild(item);
+        });
+
+        // Toggle List
+        input.addEventListener('click', () => {
+            list.classList.toggle('show');
+            input.focus(); // Keep focus for typing
+        });
+
+        // Filter Logic
+        input.addEventListener('input', () => {
+            const filter = input.value.toLowerCase();
+            list.classList.add('show');
+            
+            const items = list.querySelectorAll('.option-item');
+            items.forEach(item => {
+                if (item.textContent.toLowerCase().includes(filter)) {
+                    item.classList.remove('hidden');
+                } else {
+                    item.classList.add('hidden');
+                }
+            });
+        });
+
+        // Close on outside click
+        document.addEventListener('click', (e) => {
+            if (!wrapper.contains(e.target)) {
+                list.classList.remove('show');
+            }
+        });
+    });
+}
+
 function populateCountriesAndCodes() {
-    const countrySelects = document.querySelectorAll('.country-select');
+    // Only phone selects are standard selects now
     const phoneSelects = document.querySelectorAll('.phone-code-select');
     
-    if (countrySelects.length === 0 && phoneSelects.length === 0) return;
+    if (phoneSelects.length === 0) return;
 
     // Format: [Name, Code, Flag]
     const countries = [
@@ -211,6 +271,7 @@ function populateCountriesAndCodes() {
         { name: "Czech Republic", code: "+420", flag: "🇨🇿" },
         { name: "Denmark", code: "+45", flag: "🇩🇰" },
         { name: "Djibouti", code: "+253", flag: "🇩🇯" },
+        { name: "Dominica", code: "+1-767", flag: "🇩🇲" },
         { name: "Dominican Republic", code: "+1", flag: "🇩🇴" },
         { name: "DR Congo", code: "+243", flag: "🇨🇩" },
         { name: "Ecuador", code: "+593", flag: "🇪🇨" },
@@ -290,6 +351,7 @@ function populateCountriesAndCodes() {
         { name: "Pakistan", code: "+92", flag: "🇵🇰" },
         { name: "Palestine", code: "+970", flag: "🇵🇸" },
         { name: "Panama", code: "+507", flag: "🇵🇦" },
+        { name: "Papua New Guinea", code: "+675", flag: "🇵🇬" },
         { name: "Paraguay", code: "+595", flag: "🇵🇾" },
         { name: "Peru", code: "+51", flag: "🇵🇪" },
         { name: "Philippines", code: "+63", flag: "🇵🇭" },
@@ -327,11 +389,12 @@ function populateCountriesAndCodes() {
         { name: "Turkmenistan", code: "+993", flag: "🇹🇲" },
         { name: "Uganda", code: "+256", flag: "🇺🇬" },
         { name: "Ukraine", code: "+380", flag: "🇺🇦" },
-        { name: "UAE", code: "+971", flag: "🇦🇪" },
+        { name: "United Arab Emirates", code: "+971", flag: "🇦🇪" },
         { name: "United Kingdom", code: "+44", flag: "🇬🇧" },
-        { name: "USA", code: "+1", flag: "🇺🇸" },
+        { name: "United States of America", code: "+1", flag: "🇺🇸" },
         { name: "Uruguay", code: "+598", flag: "🇺🇾" },
         { name: "Uzbekistan", code: "+998", flag: "🇺🇿" },
+        { name: "Vanuatu", code: "+678", flag: "🇻🇺" },
         { name: "Venezuela", code: "+58", flag: "🇻🇪" },
         { name: "Vietnam", code: "+84", flag: "🇻🇳" },
         { name: "Yemen", code: "+967", flag: "🇾🇪" },
@@ -339,17 +402,10 @@ function populateCountriesAndCodes() {
         { name: "Zimbabwe", code: "+263", flag: "🇿🇼" }
     ];
 
-    // Populate Country Selects
-    countrySelects.forEach(select => {
-        countries.forEach(c => {
-            const option = document.createElement('option');
-            option.value = c.name;
-            option.textContent = `${c.flag} ${c.name}`;
-            select.appendChild(option);
-        });
-    });
+    // Initialize the Searchable Selects (Residence / Nationality)
+    initSearchableSelects(countries);
 
-    // Populate Phone Codes
+    // Populate Phone Codes (Standard Select)
     phoneSelects.forEach(select => {
         // Pre-select Belgium or similar if desirable
         countries.forEach(c => {
