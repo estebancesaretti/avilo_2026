@@ -381,12 +381,6 @@ p {
     display: none;
 }
 
-/* Phone specific adjustment */
-.phone-code-searchable .options-list {
-    min-width: 300px; /* Allow seeing full country name */
-    width: auto;
-}
-
 .mobile-menu-btn {
     display: none;
     background: none;
