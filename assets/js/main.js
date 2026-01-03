@@ -166,8 +166,7 @@ document.addEventListener('DOMContentLoaded', () => {
 /* -------------------------------------------------------------------------- */
 
 function initSearchableSelects(countries) {
-    // Exclude phone-code-wrapper to prevent double initialization/conflicts
-    const wrappers = document.querySelectorAll('.searchable-select:not(.phone-code-wrapper)');
+    const wrappers = document.querySelectorAll('.searchable-select');
     
     wrappers.forEach(wrapper => {
         const input = wrapper.querySelector('.search-input');
@@ -406,7 +405,7 @@ function populateCountriesAndCodes() {
     // Initialize the Searchable Selects (Residence / Nationality) - Use name order
     initSearchableSelects(countries);
 
-    // Populate Phone Codes (Searchable Select) - Use numeric code order
+    // Populate Phone Codes (Custom Searchable Select) - Use numeric code order
     const sortedForPhone = [...countries].sort((a, b) => {
         // Parse code like "+1-767" -> 1, "+54" -> 54
         const codeA = parseInt(a.code.replace(/\D/g, '')) || 0;
@@ -414,28 +413,38 @@ function populateCountriesAndCodes() {
         return codeA - codeB;
     });
 
-    initPhoneSelects(sortedForPhone);
+    initPhoneCodeSelect(sortedForPhone);
 }
 
-function initPhoneSelects(countries) {
-    const wrappers = document.querySelectorAll('.phone-code-wrapper');
-    
-    wrappers.forEach(wrapper => {
-        const input = wrapper.querySelector('.search-input');
-        const list = wrapper.querySelector('.options-list');
-        const hiddenInput = wrapper.querySelector('input[type="hidden"]');
-        
-        if (!input || !list) return;
+function initPhoneCodeSelect(countries) {
+    const wrapper = document.querySelector('.phone-code-searchable');
+    if (!wrapper) return;
 
-        // Populate List
-        countries.forEach(c => {
+    const input = wrapper.querySelector('.search-input');
+    const list = wrapper.querySelector('.options-list');
+    const hiddenInput = wrapper.querySelector('input[type="hidden"]');
+
+    if (!input || !list) return;
+
+    // Default Selection (Belgium +32)
+    const defaultCountry = countries.find(c => c.code === '+32') || countries[0];
+    if (defaultCountry) {
+        input.value = `${defaultCountry.flag} ${defaultCountry.code}`;
+        hiddenInput.value = defaultCountry.code;
+    }
+
+    // Populate List Function
+    const renderList = (items) => {
+        list.innerHTML = '';
+        items.forEach(c => {
             const item = document.createElement('div');
             item.className = 'option-item';
-            // Display: 🇧🇪 +32 (Belgium)
-            item.textContent = `${c.flag} ${c.code} (${c.name})`; 
-            item.dataset.value = c.code;
+            // Display: Flag Name (Code) e.g. 🇧🇪 Belgium (+32)
+            item.textContent = `${c.flag} ${c.name} (${c.code})`;
+            item.dataset.code = c.code;
             
             item.addEventListener('click', () => {
+                // Selected View: Flag Code e.g. 🇧🇪 +32
                 input.value = `${c.flag} ${c.code}`;
                 hiddenInput.value = c.code;
                 list.classList.remove('show');
@@ -443,40 +452,53 @@ function initPhoneSelects(countries) {
             
             list.appendChild(item);
         });
+    };
 
-        // Set Default (Belgium)
-        const defaultCountry = countries.find(c => c.code === '+32');
-        if (defaultCountry) {
-            input.value = `${defaultCountry.flag} ${defaultCountry.code}`;
-            hiddenInput.value = defaultCountry.code;
+    // Initial Render
+    renderList(countries);
+
+    // Toggle List
+    input.addEventListener('click', () => {
+        list.classList.toggle('show');
+        if (list.classList.contains('show')) {
+            input.value = ''; // Clear for searching
+            input.placeholder = "Search code or country...";
+            input.focus();
+            renderList(countries); // Show all
         }
-
-        // Toggle List
-        input.addEventListener('click', () => {
-            list.classList.toggle('show');
-            input.focus(); 
-        });
-
-        // Filter Logic
-        input.addEventListener('input', () => {
-            const filter = input.value.toLowerCase();
-            list.classList.add('show');
-            
-            const items = list.querySelectorAll('.option-item');
-            items.forEach(item => {
-                if (item.textContent.toLowerCase().includes(filter)) {
-                    item.classList.remove('hidden');
-                } else {
-                    item.classList.add('hidden');
-                }
-            });
-        });
-
-        // Close on outside click
-        document.addEventListener('click', (e) => {
-            if (!wrapper.contains(e.target)) {
-                list.classList.remove('show');
-            }
-        });
     });
-}
+
+    // Filter Logic
+    input.addEventListener('input', () => {
+        const val = input.value.toLowerCase().trim();
+        list.classList.add('show');
+        
+        const filtered = countries.filter(c => {
+            // Check digits (starts with) -> '52' matches '+52'
+            const digits = c.code.replace('+', '');
+            if (digits.startsWith(val)) return true;
+            if (c.code.includes(val)) return true; // match "+52" directly
+
+            // Check name (contains) -> 'mex' matches 'Mexico'
+            if (c.name.toLowerCase().includes(val)) return true;
+            
+            return false;
+        });
+
+        renderList(filtered);
+    });
+
+    // Handle Blur / Outside Click
+    document.addEventListener('click', (e) => {
+        if (!wrapper.contains(e.target)) {
+            list.classList.remove('show');
+            // Restore display value if hidden input has text
+            if (hiddenInput.value) {
+                const currentCode = hiddenInput.value;
+                const country = countries.find(c => c.code === currentCode);
+                if (country) {
+                   input.value = `${country.flag} ${country.code}`;
+                }
+            }
+        }
+    });
