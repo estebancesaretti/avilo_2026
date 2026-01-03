@@ -486,4 +486,4 @@ function initPhoneCodeSelect(countries) {
         hiddenInput.value = defaultCountry.code;
     }
 }
-}
+
