@@ -159,15 +159,23 @@ function initContactForm() {
 /* -------------------------------------------------------------------------- */
 document.addEventListener('DOMContentLoaded', () => {
     populateCountriesAndCodes();
+    populatesData();
 });
 
 /* -------------------------------------------------------------------------- */
 /* Searchable Select Logic */
 /* -------------------------------------------------------------------------- */
 
-function initSearchableSelects(countries) {
-    const wrappers = document.querySelectorAll('.searchable-select');
-    
+/**
+ * Initializes generic searchable selects.
+ * @param {string} selector - CSS selector for the wrappers
+ * @param {Array} data - Array of objects to populate
+ * @param {Function} formatItem - Function to return display text for an item
+ * @param {Function} getValue - Function to return hidden value for an item
+ */
+function setupSearchableSelects(selector, data, formatItem, getValue) {
+    const wrappers = document.querySelectorAll(selector);
+
     wrappers.forEach(wrapper => {
         const input = wrapper.querySelector('.search-input');
         const list = wrapper.querySelector('.options-list');
@@ -176,25 +184,29 @@ function initSearchableSelects(countries) {
         if (!input || !list) return;
 
         // Populate List
-        countries.forEach(c => {
-            const item = document.createElement('div');
-            item.className = 'option-item';
-            item.textContent = `${c.flag} ${c.name}`;
-            item.dataset.value = c.name;
+        data.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'option-item';
+            div.textContent = formatItem(item);
+            div.dataset.value = getValue(item);
             
-            item.addEventListener('click', () => {
-                input.value = item.textContent;
-                hiddenInput.value = c.name;
+            div.addEventListener('click', () => {
+                input.value = div.textContent;
+                if(hiddenInput) hiddenInput.value = getValue(item);
                 list.classList.remove('show');
             });
             
-            list.appendChild(item);
+            list.appendChild(div);
         });
 
         // Toggle List
         input.addEventListener('click', () => {
+            // Close others
+            document.querySelectorAll('.options-list.show').forEach(l => {
+                if(l !== list) l.classList.remove('show');
+            });
             list.classList.toggle('show');
-            input.focus(); // Keep focus for typing
+            // input.focus(); // mobile focus issue prevention
         });
 
         // Filter Logic
@@ -202,12 +214,12 @@ function initSearchableSelects(countries) {
             const filter = input.value.toLowerCase();
             list.classList.add('show');
             
-            const items = list.querySelectorAll('.option-item');
-            items.forEach(item => {
-                if (item.textContent.toLowerCase().includes(filter)) {
-                    item.classList.remove('hidden');
+            const options = list.querySelectorAll('.option-item');
+            options.forEach(opt => {
+                if (opt.textContent.toLowerCase().includes(filter)) {
+                    opt.classList.remove('hidden');
                 } else {
-                    item.classList.add('hidden');
+                    opt.classList.add('hidden');
                 }
             });
         });
@@ -221,12 +233,7 @@ function initSearchableSelects(countries) {
     });
 }
 
-function populateCountriesAndCodes() {
-    // Only phone selects are standard selects now
-    const phoneSelects = document.querySelectorAll('.phone-code-select');
-    
-    if (phoneSelects.length === 0) return;
-
+function populatesData() {
     // Format: [Name, Code, Flag]
     const countries = [
         { name: "Afghanistan", code: "+93", flag: "🇦🇫" },
@@ -402,71 +409,19 @@ function populateCountriesAndCodes() {
         { name: "Zimbabwe", code: "+263", flag: "🇿🇼" }
     ];
 
-    // Initialize the Searchable Selects (Residence / Nationality / Destination)
-    initSearchableSelects(countries);
+    // 1. Initialize Country Selects (Type A: Name)
+    setupSearchableSelects(
+        '.searchable-select.type-country', 
+        countries,
+        (c) => `${c.flag} ${c.name}`,   // Display
+        (c) => c.name                   // Value
+    );
 
-    // Initialize Phone Code Searchable Select
-    initPhoneCodeSelect(countries);
-}
-
-function initPhoneCodeSelect(countries) {
-    const wrapper = document.getElementById('phone-code-wrapper');
-    if (!wrapper) return;
-
-    const input = wrapper.querySelector('.search-input');
-    const list = wrapper.querySelector('.options-list');
-    const hiddenInput = wrapper.querySelector('input[type="hidden"]');
-
-    // Populate List
-    countries.forEach(c => {
-        const item = document.createElement('div');
-        item.className = 'option-item';
-        // Display: 🇧🇪 +32 (Belgium)
-        item.textContent = `${c.flag} ${c.code} (${c.name})`;
-        item.dataset.value = c.code;
-        
-        item.addEventListener('click', () => {
-            input.value = c.code; // Just show code in input
-            hiddenInput.value = c.code;
-            list.classList.remove('show');
-        });
-        
-        list.appendChild(item);
-    });
-
-    // Default to Belgium (+32)
-    const defaultCountry = countries.find(c => c.name === "Belgium");
-    if (defaultCountry) {
-        input.value = defaultCountry.code;
-        hiddenInput.value = defaultCountry.code;
-    }
-
-    // Toggle List
-    input.addEventListener('click', () => {
-        list.classList.toggle('show');
-        input.select();
-    });
-
-    // Filter Logic
-    input.addEventListener('input', () => {
-        const filter = input.value.toLowerCase();
-        list.classList.add('show');
-        
-        const items = list.querySelectorAll('.option-item');
-        items.forEach(item => {
-            // Search by code or country name
-            if (item.textContent.toLowerCase().includes(filter)) {
-                item.classList.remove('hidden');
-            } else {
-                item.classList.add('hidden');
-            }
-        });
-    });
-
-    // Close on outside click
-    document.addEventListener('click', (e) => {
-        if (!wrapper.contains(e.target)) {
-            list.classList.remove('show');
-        }
-    });
+    // 2. Initialize Phone Code Selects (Type B: Code)
+    setupSearchableSelects(
+        '.searchable-select.type-phone', 
+        countries,
+        (c) => `${c.flag} ${c.code} (${c.name})`, // Display: 🇧🇪 +32 (Belgium)
+        (c) => c.code                           // Value: +32
+    );
 }
