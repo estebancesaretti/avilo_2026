@@ -405,23 +405,85 @@ function populateCountriesAndCodes() {
     // Initialize the Searchable Selects (Residence / Nationality) - Use name order
     initSearchableSelects(countries);
 
-    // Populate Phone Codes (Standard Select) - Use numeric code order
+    // Initialize Phone Code Searchable Select
+    initPhoneCodeSelect(countries);
+}
+
+function initPhoneCodeSelect(countries) {
+    const wrapper = document.querySelector('#phone-code-wrapper');
+    if (!wrapper) return;
+
+    const input = wrapper.querySelector('.search-input');
+    const list = wrapper.querySelector('.options-list');
+    const hiddenInput = wrapper.querySelector('input[type="hidden"]');
+
+    // Sort by code for the list
     const sortedForPhone = [...countries].sort((a, b) => {
-        // Parse code like "+1-767" -> 1, "+54" -> 54
         const codeA = parseInt(a.code.replace(/\D/g, '')) || 0;
         const codeB = parseInt(b.code.replace(/\D/g, '')) || 0;
         return codeA - codeB;
     });
 
-    phoneSelects.forEach(select => {
-        // Pre-select Belgium or similar if desirable
-        sortedForPhone.forEach(c => {
-            const option = document.createElement('option');
-            option.value = c.code;
-            // Display: 🇧🇪 +32
-            option.textContent = `${c.flag} ${c.code}`;
-            if(c.code === '+32') option.selected = true; // Default to Belgium
-            select.appendChild(option);
+    // Populate List
+    sortedForPhone.forEach(c => {
+        const item = document.createElement('div');
+        item.className = 'option-item';
+        // Display: 🇧🇪 +32 Belgium (Allows visual confirmation)
+        item.textContent = `${c.flag} ${c.code}  ${c.name}`;
+        item.dataset.value = c.code;
+        // Search by code OR name
+        item.dataset.search = `${c.code} ${c.name}`.toLowerCase();
+
+        item.addEventListener('click', () => {
+            // Selected view: 🇧🇪 +32
+            input.value = `${c.flag} ${c.code}`;
+            hiddenInput.value = c.code;
+            list.classList.remove('show');
+        });
+
+        list.appendChild(item);
+    });
+
+    // Toggle List
+    input.addEventListener('click', () => {
+        list.classList.toggle('show');
+        input.value = ''; // Clear for easy typing of new code? Or maybe select all. Let's keep value but focus.
+        // Actually for codes, clearing might be better if they want to type "+1" immediately
+        // But let's stick to standard behavior: just focus. 
+        input.focus();
+    });
+
+    // Filter Logic
+    input.addEventListener('input', () => {
+        const filter = input.value.toLowerCase();
+        list.classList.add('show');
+
+        const items = list.querySelectorAll('.option-item');
+        items.forEach(item => {
+            // Match against the custom search dataset
+            if (item.dataset.search.includes(filter)) {
+                item.classList.remove('hidden');
+            } else {
+                item.classList.add('hidden');
+            }
         });
     });
+
+    // Close on outside click
+    document.addEventListener('click', (e) => {
+        if (!wrapper.contains(e.target)) {
+            list.classList.remove('show');
+            // If empty, revert to default or keep empty? 
+            // If they clicked out without selecting, verify if valid? 
+            // For now, simple behavior.
+        }
+    });
+
+    // Default Selection (Belgium)
+    const defaultCountry = countries.find(c => c.code === '+32');
+    if (defaultCountry) {
+        input.value = `${defaultCountry.flag} ${defaultCountry.code}`;
+        hiddenInput.value = defaultCountry.code;
+    }
+}
 }
