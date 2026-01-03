@@ -192,17 +192,26 @@
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <label for="application_type" class="form-label">Type of Application <span class="text-emphasis">*</span></label>
-                                    <select id="application_type" name="application_type" class="form-select" required>
-                                        <option value="" disabled selected>Select an option</option>
-                                        <option value="Family Reunification">Family Reunification</option>
-                                        <option value="Work/Talent">Work & Talent</option>
-                                        <option value="Student Residence">Student Residence</option>
-                                        <option value="Temporary Residence">Temporary Residence</option>
-                                        <option value="Permanent Residence">Permanent Residence</option>
-                                        <option value="Other">Other</option>
-                                    </select>
+                                    <label for="destination" class="form-label">Destination Country</label>
+                                    <div class="searchable-select" id="destination-wrapper">
+                                        <input type="text" id="destination-input" class="form-input search-input" placeholder="Where do you want to move?" autocomplete="off">
+                                        <div class="options-list"></div>
+                                        <input type="hidden" name="destination_country" id="destination">
+                                    </div>
                                 </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="application_type" class="form-label">Type of Application <span class="text-emphasis">*</span></label>
+                                <select id="application_type" name="application_type" class="form-select" required>
+                                    <option value="" disabled selected>Select an option</option>
+                                    <option value="Family Reunification">Family Reunification</option>
+                                    <option value="Work/Talent">Work & Talent</option>
+                                    <option value="Student Residence">Student Residence</option>
+                                    <option value="Temporary Residence">Temporary Residence</option>
+                                    <option value="Permanent Residence">Permanent Residence</option>
+                                    <option value="Other">Other</option>
+                                </select>
                             </div>
 
                             <div class="form-group">
