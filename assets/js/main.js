@@ -402,19 +402,71 @@ function populateCountriesAndCodes() {
         { name: "Zimbabwe", code: "+263", flag: "🇿🇼" }
     ];
 
-    // Initialize the Searchable Selects (Residence / Nationality)
+    // Initialize the Searchable Selects (Residence / Nationality / Destination)
     initSearchableSelects(countries);
 
-    // Populate Phone Codes (Standard Select)
-    phoneSelects.forEach(select => {
-        // Pre-select Belgium or similar if desirable
-        countries.forEach(c => {
-            const option = document.createElement('option');
-            option.value = c.code;
-            // Display: 🇧🇪 +32
-            option.textContent = `${c.flag} ${c.code}`;
-            if(c.code === '+32') option.selected = true; // Default to Belgium
-            select.appendChild(option);
+    // Initialize Phone Code Searchable Select
+    initPhoneCodeSelect(countries);
+}
+
+function initPhoneCodeSelect(countries) {
+    const wrapper = document.getElementById('phone-code-wrapper');
+    if (!wrapper) return;
+
+    const input = wrapper.querySelector('.search-input');
+    const list = wrapper.querySelector('.options-list');
+    const hiddenInput = wrapper.querySelector('input[type="hidden"]');
+
+    // Populate List
+    countries.forEach(c => {
+        const item = document.createElement('div');
+        item.className = 'option-item';
+        // Display: 🇧🇪 +32 (Belgium)
+        item.textContent = `${c.flag} ${c.code} (${c.name})`;
+        item.dataset.value = c.code;
+        
+        item.addEventListener('click', () => {
+            input.value = c.code; // Just show code in input
+            hiddenInput.value = c.code;
+            list.classList.remove('show');
         });
+        
+        list.appendChild(item);
+    });
+
+    // Default to Belgium (+32)
+    const defaultCountry = countries.find(c => c.name === "Belgium");
+    if (defaultCountry) {
+        input.value = defaultCountry.code;
+        hiddenInput.value = defaultCountry.code;
+    }
+
+    // Toggle List
+    input.addEventListener('click', () => {
+        list.classList.toggle('show');
+        input.select();
+    });
+
+    // Filter Logic
+    input.addEventListener('input', () => {
+        const filter = input.value.toLowerCase();
+        list.classList.add('show');
+        
+        const items = list.querySelectorAll('.option-item');
+        items.forEach(item => {
+            // Search by code or country name
+            if (item.textContent.toLowerCase().includes(filter)) {
+                item.classList.remove('hidden');
+            } else {
+                item.classList.add('hidden');
+            }
+        });
+    });
+
+    // Close on outside click
+    document.addEventListener('click', (e) => {
+        if (!wrapper.contains(e.target)) {
+            list.classList.remove('show');
+        }
     });
 }
