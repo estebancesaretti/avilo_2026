@@ -360,6 +360,13 @@ p {
     display: block;
 }
 
+/* Specific style for phone code dropdown to prevent cutting off text */
+.phone-code-wrapper .options-list {
+    width: max-content;
+    min-width: 280px;
+    max-width: 85vw; /* Safety for mobile */
+}
+
 .option-item {
     padding: 0.75rem 1rem;
     cursor: pointer;
