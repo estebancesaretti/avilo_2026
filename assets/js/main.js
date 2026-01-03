@@ -166,7 +166,8 @@ document.addEventListener('DOMContentLoaded', () => {
 /* -------------------------------------------------------------------------- */
 
 function initSearchableSelects(countries) {
-    const wrappers = document.querySelectorAll('.searchable-select');
+    // Exclude phone-code-wrapper to prevent double initialization/conflicts
+    const wrappers = document.querySelectorAll('.searchable-select:not(.phone-code-wrapper)');
     
     wrappers.forEach(wrapper => {
         const input = wrapper.querySelector('.search-input');
