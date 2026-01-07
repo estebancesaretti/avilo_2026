@@ -1,0 +1,149 @@
+:root {
+  --brand-color: #8aa8b2;
+  --brand-dark: #4a6872;
+  --brand-darker: #2f454d;
+  --text-color: #3a4b52;
+  --bg-start: #f4f8f9;
+  --bg-end: #dde6e9;
+  --white: #ffffff;
+  --font-family: 'Inter', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-family);
+  background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%);
+  color: var(--text-color);
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+.container {
+  width: 100%;
+  max-width: 600px;
+  padding: 2rem;
+  text-align: center;
+}
+
+.content {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  padding: 3rem 2rem;
+  border-radius: 24px;
+  box-shadow: 0 20px 40px rgba(138, 168, 178, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  animation: fadeIn 1s ease-out;
+}
+
+.logo {
+  height: 60px;
+  margin-bottom: 2rem;
+  width: auto;
+}
+
+h1 {
+  font-size: 2.75rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  letter-spacing: -0.02em;
+  color: var(--brand-darker);
+  line-height: 1.1;
+}
+
+.subtitle {
+  font-size: 1.25rem;
+  color: var(--brand-dark);
+  margin-bottom: 2.5rem;
+  font-weight: 400;
+}
+
+.signup-form {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap; /* Mobile friendly */
+  justify-content: center;
+}
+
+input[type='email'] {
+  padding: 0.875rem 1.25rem;
+  border: 2px solid transparent;
+  background-color: white;
+  border-radius: 12px;
+  font-size: 1rem;
+  flex: 1;
+  min-width: 220px;
+  color: var(--text-color);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+  /* Disabled state styling */
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+
+button {
+  padding: 0.875rem 2rem;
+  background-color: var(--brand-dark);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: not-allowed;
+  opacity: 0.9;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(74, 104, 114, 0.2);
+}
+
+.note {
+  font-size: 0.95rem;
+  color: var(--brand-dark);
+  margin-top: 0.75rem;
+  line-height: 1.5;
+}
+
+.note a {
+  color: var(--brand-darker);
+  text-decoration: none;
+  font-weight: 600;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.2s;
+}
+
+.note a:hover {
+  border-color: var(--brand-darker);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 480px) {
+  h1 {
+    font-size: 2rem;
+  }
+  .content {
+    padding: 2.5rem 1.5rem;
+  }
+  .logo {
+    height: 48px;
+  }
+  button {
+    width: 100%;
+  }
+}
